@@ -76,7 +76,9 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 
 	responseModel := make([]model.EventData, 0, 10)
 
-	err := c.AppContext.Storage.DB("event_model").C("events").Find(bson.M{"eventType": "Usual"}).All(&responseModel)
+	findBy := bson.M{"eventType": request.Type}
+
+	err := c.AppContext.Storage.DB("event_model").C("events").Find(findBy).All(&responseModel)
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
 		panic(err)
