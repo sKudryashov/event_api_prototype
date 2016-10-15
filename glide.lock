@@ -1,0 +1,29 @@
+hash: 5836865838f60a36b2ae249f8b83037cc3d0b090da3c746fd5bf35c7fb998dc0
+updated: 2016-10-13T18:03:03.378750636+03:00
+imports:
+- name: github.com/go-playground/form
+  version: d18f24949d2fcf4b367cff1424a9e1a60dd5507f
+- name: github.com/go-playground/lars
+  version: b29f7cf0a3024620bca76876b51d395d300a5ac0
+- name: github.com/go-playground/locales
+  version: e09c334054e376ba0c75ebb8dcdf36a4733f1772
+  subpackages:
+  - currency
+- name: github.com/go-playground/universal-translator
+  version: fc73d0c4bd37070e0d34e3647253565ff7847264
+- name: github.com/gorilla/websocket
+  version: 2d1e4548da234d9cb742cc3628556fef86aafbac
+- name: golang.org/x/net
+  version: cf4effbb9db1f3ef07f7e1891402991b6afbb276
+  subpackages:
+  - context
+- name: gopkg.in/go-playground/validator.v8
+  version: 493dfb6209fcb493fcdbc2a0f14b882f2d53979f
+- name: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  subpackages:
+  - bson
+  - internal/json
+  - internal/sasl
+  - internal/scram
+testImports: []

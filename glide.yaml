@@ -1,0 +1,9 @@
+package: getsocial
+import:
+- package: github.com/go-playground/lars
+  version: ~3.6.0
+- package: gopkg.in/go-playground/validator.v8
+  version: ~9.2.1
+- package: gopkg.in/mgo.v2
+  subpackages:
+  - bson
