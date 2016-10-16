@@ -3,11 +3,12 @@ package controller
 import (
 	"io/ioutil"
 	"gopkg.in/go-playground/validator.v8"
-	"getsocial/model"
-	"getsocial/router"
+	"../model"
+	"../router"
 	"gopkg.in/mgo.v2/bson"
 	"encoding/json"
 	"github.com/go-playground/lars"
+	"strconv"
 )
 
 type EventController struct {
@@ -75,10 +76,9 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 	}
 
 	responseModel := make([]model.EventData, 0, 10)
-
 	findBy := bson.M{"eventType": request.Type}
-
 	err := c.AppContext.Storage.DB("event_model").C("events").Find(findBy).All(&responseModel)
+
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
 		panic(err)
@@ -94,7 +94,31 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 }
 
 func (ec *EventController) GetDataByRange(c *router.MyContext)  {
+	var start, end int
+	var err error
 
+	start, err = strconv.Atoi(c.Ctx.Param("start"))
+	if err != nil {
+		c.AppContext.Log.Println("Wrong URL start parameter: " + err.Error())
+	}
+
+	end, err = strconv.Atoi(c.Ctx.Param("end"))
+	if err != nil {
+		c.AppContext.Log.Println("Wrong URL end parameter: " + err.Error())
+	}
+
+	responseModel := make([]model.EventData, 0, 10)
+	findBy := bson.M{"sessionStart": bson.M{ "$gte": start}, "sessionEnd":bson.M{"$lte":end} }
+	err = c.AppContext.Storage.DB("event_model").C("events").Find(findBy).All(&responseModel)
+
+	if err != nil {
+		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
+		panic(err)
+	}
+
+	rsp := ec.getSuccessWriter(c)
+	dataFoundJson, err := json.Marshal(responseModel)
+	rsp.Write([]byte(dataFoundJson))
 }
 
 func (ec *EventController) getValidator() *validator.Validate {

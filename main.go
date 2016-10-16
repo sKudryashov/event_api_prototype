@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-	"getsocial/router"
-	ctrl "getsocial/controller"
+	"./router"
+	ctrl "./controller"
 	"github.com/go-playground/lars"
 )
 
@@ -18,7 +18,7 @@ func InitApp() *lars.LARS {
 	router.Post("/add", ec.PushData)
 	router.Get("/read", ec.GetData)
 
-	// By the REST ideology here should be GET method with route /readbytype/:dataType/:start/:end
+	// By the REST ideology here should be the GET method with route /readbytype/:dataType/:start/:end
 	// but for brevity let's reduce by POST method and json data as the input parameters
 	router.Post("/readbytype", ec.GetDataByType)
 	router.Get("/readbytimerange/:start/:end", ec.GetDataByRange)
