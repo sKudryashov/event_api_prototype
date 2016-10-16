@@ -93,6 +93,10 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 	rsp.Write([]byte(dataFoundJson))
 }
 
+func (ec *EventController) GetDataByRange(c *router.MyContext)  {
+
+}
+
 func (ec *EventController) getValidator() *validator.Validate {
 	validate := validator.New()
 	validate.SetTagName("validate")
