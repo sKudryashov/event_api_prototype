@@ -3,12 +3,13 @@ package controller
 import (
 	"io/ioutil"
 	"gopkg.in/go-playground/validator.v8"
-	"../model"
-	"../router"
+	"github.com/sKudryashov/social_event_api_prototype/model"
+	"github.com/sKudryashov/social_event_api_prototype/router"
 	"gopkg.in/mgo.v2/bson"
 	"encoding/json"
 	"github.com/go-playground/lars"
 	"strconv"
+	"net/http"
 )
 
 type EventController struct {
@@ -26,12 +27,10 @@ func (ec *EventController) PushData (c *router.MyContext) {
 
 	if err := json.Unmarshal(data, &request); err != nil {
 		c.AppContext.Log.Println("Error with json unmarshalling: " + err.Error())
-		panic(err)
 	}
 
 	if err := validate.Struct(request); err != nil {
 		c.AppContext.Log.Println("Error with validation: " + err.Error())
-		panic(err)
 	}
 
 	request.EventId = bson.NewObjectId()
@@ -47,7 +46,6 @@ func (ec *EventController) GetData (c *router.MyContext)  {
 
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		panic(err)
 	}
 
 	rsp := ec.getSuccessWriter(c)
@@ -65,23 +63,22 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 
 	if err := json.Unmarshal(data, &request); err != nil {
 		c.AppContext.Log.Println("Error with json unmarshalling: " + err.Error())
-		panic(err)
 	}
 
 	validate := ec.getValidator()
 
 	if err := validate.Struct(request); err != nil {
 		c.AppContext.Log.Println("Error with validation: " + err.Error())
-		panic(err)
+		//todo: actually this is the wrong logic and the behaviour should be wrapped into appropriate writers
 	}
 
 	responseModel := make([]model.EventData, 0, 10)
 	findBy := bson.M{"eventType": request.Type}
+	//todo: for sure this should be moved to a separate abstraction layer to avoid tight coupling and a dependency on certain type of the storage
 	err := c.AppContext.Storage.DB("event_model").C("events").Find(findBy).All(&responseModel)
 
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		panic(err)
 	}
 
 	rsp := ec.getSuccessWriter(c)
@@ -113,7 +110,6 @@ func (ec *EventController) GetDataByRange(c *router.MyContext)  {
 
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		panic(err)
 	}
 
 	rsp := ec.getSuccessWriter(c)
@@ -130,7 +126,23 @@ func (ec *EventController) getValidator() *validator.Validate {
 
 func (ec *EventController) getSuccessWriter(c *router.MyContext) *lars.Response {
 	rsp := c.Ctx.Response()
-	rsp.WriteHeader(200)
+	rsp.WriteHeader(http.StatusOK)
+	rsp.Header().Set("Content-Type", "application/json")
+
+	return rsp
+}
+
+func (ec *EventController) getErrorNotFoundWriter(c *router.MyContext) *lars.Response {
+	rsp := c.Ctx.Response()
+	rsp.WriteHeader(http.StatusNotFound)
+	rsp.Header().Set("Content-Type", "application/json")
+
+	return rsp
+}
+
+func (ec *EventController) getErrorForbiddenWriter(c *router.MyContext) *lars.Response {
+	rsp := c.Ctx.Response()
+	rsp.WriteHeader(http.StatusForbidden)
 	rsp.Header().Set("Content-Type", "application/json")
 
 	return rsp

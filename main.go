@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-	"./router"
-	ctrl "./controller"
+	"github.com/sKudryashov/social_event_api_prototype/router"
+	ctrl "github.com/sKudryashov/social_event_api_prototype/controller"
 	"github.com/go-playground/lars"
 )
 
