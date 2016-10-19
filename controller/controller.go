@@ -5,21 +5,27 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"github.com/sKudryashov/social_event_api_prototype/router"
-	"gopkg.in/mgo.v2/bson"
 	"encoding/json"
 	"github.com/go-playground/lars"
 	"strconv"
 	"net/http"
 )
 
+// EventController serves events logic of the application
 type EventController struct {
-
+	error EventError
+}
+// EventError this is the custom error type of event handling
+type EventError struct {
+	err error
 }
 
+// NewEventController initialization of the controller
 func NewEventController() *EventController {
 	return &EventController{}
 }
 
+// PushData adding data to a storage (whatever it is)
 func (ec *EventController) PushData (c *router.MyContext) {
 	data, _ := ioutil.ReadAll(c.Request().Body)
 	request := model.EventData{}
@@ -27,23 +33,27 @@ func (ec *EventController) PushData (c *router.MyContext) {
 
 	if err := json.Unmarshal(data, &request); err != nil {
 		c.AppContext.Log.Println("Error with json unmarshalling: " + err.Error())
+		return err
 	}
 
 	if err := validate.Struct(request); err != nil {
 		c.AppContext.Log.Println("Error with validation: " + err.Error())
+		return err
 	}
 
-	request.EventId = bson.NewObjectId()
-	c.AppContext.Storage.DB("event_model").C("events").Insert(request)
+	if err := c.AppContext.Storage.AddEvent(request); err == nil {
+		c.AppContext.Log.Println("Error adding data: " + err.Error())
+		return err
+	}
+
 	rsp := ec.getSuccessWriter(c)
 	rsp.Write([]byte("Data has been written successfully"))
 	c.AppContext.Log.Println("Successfull response")
 }
 
+// GetData returns the whole dataset
 func (ec *EventController) GetData (c *router.MyContext)  {
-	responseModel := make([]model.EventData, 0, 3)
-	err := c.AppContext.Storage.DB("event_model").C("events").Find(nil).All(&responseModel)
-
+	responseModel, err := c.AppContext.Storage.GetAllEvents()
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
 	}
@@ -57,6 +67,7 @@ func (ec *EventController) GetData (c *router.MyContext)  {
 	rsp.Write([]byte(dataFoundJson))
 }
 
+// GetDataByType Fetching data by event type from storage
 func (ec *EventController) GetDataByType(c *router.MyContext) {
 	data, _ := ioutil.ReadAll(c.Request().Body)
 	request := model.FetchBy{}
@@ -69,27 +80,25 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 
 	if err := validate.Struct(request); err != nil {
 		c.AppContext.Log.Println("Error with validation: " + err.Error())
-		//todo: actually this is the wrong logic and the behaviour should be wrapped into appropriate writers
 	}
 
-	responseModel := make([]model.EventData, 0, 10)
-	findBy := bson.M{"eventType": request.Type}
-	//todo: for sure this should be moved to a separate abstraction layer to avoid tight coupling and a dependency on certain type of the storage
-	err := c.AppContext.Storage.DB("event_model").C("events").Find(findBy).All(&responseModel)
+	events, err := c.AppContext.Storage.GetEvents(request.Type)
 
 	if err != nil {
-		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
+		c.AppContext.Log.Println("Data fetching error:" + err.Error())
 	}
 
 	rsp := ec.getSuccessWriter(c)
-	dataFoundJson, err := json.Marshal(responseModel)
+	dataFoundJson, err := json.Marshal(events)
 
 	if err != nil {
-		c.AppContext.Log.Println("Error with unmarshalling: " + err.Error())
+		c.AppContext.Log.Println("Unmarshalling error: " + err.Error())
 	}
+
 	rsp.Write([]byte(dataFoundJson))
 }
 
+// GetDataByRange returns data in a given time range
 func (ec *EventController) GetDataByRange(c *router.MyContext)  {
 	var start, end int
 	var err error
@@ -104,9 +113,7 @@ func (ec *EventController) GetDataByRange(c *router.MyContext)  {
 		c.AppContext.Log.Println("Wrong URL end parameter: " + err.Error())
 	}
 
-	responseModel := make([]model.EventData, 0, 10)
-	findBy := bson.M{"sessionStart": bson.M{ "$gte": start}, "sessionEnd":bson.M{"$lte":end} }
-	err = c.AppContext.Storage.DB("event_model").C("events").Find(findBy).All(&responseModel)
+	responseModel, err := c.AppContext.Storage.GetEventsByRange(start, end)
 
 	if err != nil {
 		c.AppContext.Log.Println("Error with db fetching: " + err.Error())
@@ -140,6 +147,7 @@ func (ec *EventController) getErrorNotFoundWriter(c *router.MyContext) *lars.Res
 	return rsp
 }
 
+// Returns writer for HTTP forbidden
 func (ec *EventController) getErrorForbiddenWriter(c *router.MyContext) *lars.Response {
 	rsp := c.Ctx.Response()
 	rsp.WriteHeader(http.StatusForbidden)

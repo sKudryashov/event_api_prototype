@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	mongo "gopkg.in/mgo.v2"
+	"github.com/sKudryashov/social_event_api_prototype/model"
 )
 
 func GetRouter() *lars.LARS {
@@ -37,23 +37,15 @@ func castCustomContext(c lars.Context, handler lars.Handler) {
 
 type ApplicationGlobals struct {
 	Log *log.Logger
-	Storage *mongo.Session
+	Storage *model.Storage
 }
 
 func newGlobals() *ApplicationGlobals {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate | log.Ltime | log.Lshortfile)
 	return &ApplicationGlobals{
 		Log: logger,
-		Storage: NewDbSession(),
+		Storage: model.Storage.InitSession(),
 	}
-}
-
-func NewDbSession() *mongo.Session {
-	session, err := mongo.Dial("mongodb://localhost")
-	if err != nil {
-		panic(err)
-	}
-	return session
 }
 
 type MyContext struct {
