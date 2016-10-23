@@ -42,9 +42,10 @@ type ApplicationGlobals struct {
 
 func newGlobals() *ApplicationGlobals {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate | log.Ltime | log.Lshortfile)
+
 	return &ApplicationGlobals{
 		Log: logger,
-		Storage: model.Storage.InitSession(),
+		Storage: model.Init(),
 	}
 }
 
