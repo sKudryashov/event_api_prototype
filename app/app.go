@@ -31,7 +31,6 @@ func appMiddleware(f func (c *router.MyContext)) func (c *router.MyContext) {
 		err := f(c)
 		if err != nil {
 			appError["error"] = err
-			c.AppContext.Log.Println(err.Error())
 		}
 	}
 }
