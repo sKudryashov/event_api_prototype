@@ -34,14 +34,14 @@ func (ec *EventController) PushData (c *router.MyContext) error {
 	validate := ec.getValidator()
 
 	if err := json.Unmarshal(data, &request); err != nil {
-		return errors.Wrap(err, "Unmarshalling error")
+		return errors.Wrap( err, "Unmarshalling error")
 	}
 
 	if err := validate.Struct(request); err != nil {
 		return errors.Wrap(err, "Validation error")
 	}
 
-	if err := c.AppContext.Storage.AddEvent(request); err != nil {
+	if err := c.AppContext.Storage.AddEvent(&request); err != nil {
 		return errors.Wrap(err, "Data recording error")
 	}
 
@@ -53,20 +53,18 @@ func (ec *EventController) PushData (c *router.MyContext) error {
 }
 
 // GetData returns the whole dataset
-func (ec *EventController) GetData (c *router.MyContext)  {
+func (ec *EventController) GetData (c *router.MyContext) error {
 	responseModel, err := c.AppContext.Storage.GetAllEvents()
 
 	if err != nil {
-		//c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		return err
+		return errors.Wrap(err, "Db fetching error")
 	}
 
 	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(responseModel)
 
 	if err != nil {
-		//c.AppContext.Log.Println("Error with unmarshalling: " + err.Error())
-		return err
+		return errors.Wrap( err, "Unmarshalling error")
 	}
 	rsp.Write([]byte(dataFoundJson))
 
@@ -74,35 +72,31 @@ func (ec *EventController) GetData (c *router.MyContext)  {
 }
 
 // GetDataByType Fetching data by event type from storage
-func (ec *EventController) GetDataByType(c *router.MyContext) {
+func (ec *EventController) GetDataByType(c *router.MyContext) error {
 	data, _ := ioutil.ReadAll(c.Request().Body)
 	request := model.FetchBy{}
 
 	if err := json.Unmarshal(data, &request); err != nil {
-		//c.AppContext.Log.Println("Error with json unmarshalling: " + err.Error())
-		return err
+		return errors.Wrap(err, "Unmarshalling error")
 	}
 
 	validate := ec.getValidator()
 
 	if err := validate.Struct(request); err != nil {
-		//c.AppContext.Log.Println("Error with validation: " + err.Error())
-		return err
+		return errors.Wrap(err, "Validation error")
 	}
 
 	events, err := c.AppContext.Storage.GetEvents(request.Type)
 
 	if err != nil {
-		//c.AppContext.Log.Println("Data fetching error:" + err.Error())
-		return err
+		return errors.Wrap(err, "Data fetching error")
 	}
 
 	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(events)
 
 	if err != nil {
-		return err
-		//c.AppContext.Log.Println("Unmarshalling error: " + err.Error())
+		return errors.Wrap(err, "Unmarshalling error")
 	}
 
 	rsp.Write([]byte(dataFoundJson))
@@ -111,27 +105,24 @@ func (ec *EventController) GetDataByType(c *router.MyContext) {
 }
 
 // GetDataByRange returns data in a given time range
-func (ec *EventController) GetDataByRange(c *router.MyContext)  {
+func (ec *EventController) GetDataByRange(c *router.MyContext) error {
 	var start, end int
 	var err error
 
 	start, err = strconv.Atoi(c.Ctx.Param("start"))
 	if err != nil {
-		//c.AppContext.Log.Println("Wrong URL start parameter: " + err.Error())
-		return err
+		return errors.Wrap(err, "Wrong URL")
 	}
 
 	end, err = strconv.Atoi(c.Ctx.Param("end"))
 	if err != nil {
-		//c.AppContext.Log.Println("Wrong URL end parameter: " + err.Error())
-		return err
+		return errors.Wrap(err, "Wrong URL")
 	}
 
 	responseModel, err := c.AppContext.Storage.GetEventsByRange(start, end)
 
 	if err != nil {
-		//c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		return err
+		return errors.Wrap(err, "Storage error")
 	}
 
 	rsp := ec.getSuccessWriter(c)
