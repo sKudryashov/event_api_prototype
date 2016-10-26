@@ -18,8 +18,8 @@ type EventController struct {
 }
 // EventError this is the custom error type of event handling
 type EventError struct {
-	message string
-	err error
+	Message string
+	Err error
 }
 
 // NewEventController initialization of the controller
