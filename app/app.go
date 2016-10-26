@@ -25,12 +25,12 @@ func InitApp() *lars.LARS {
 // appMiddleware implements any app middleware calls,
 // for example net/context or any other logic you can wrap controllers call in
 // In our case we handle there error logic
-func appMiddleware(f func (c *router.MyContext)) func (c *router.MyContext) {
+func appMiddleware(f func (c *router.MyContext) error) func (c *router.MyContext) {
 	appError := new(ctrl.EventError)
 	return func (c *router.MyContext) {
 		err := f(c)
 		if err != nil {
-			appError["error"] = err
+			appError.Message = err.Error()
 		}
 	}
 }
