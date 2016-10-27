@@ -6,7 +6,7 @@ time range. Just type appropriate commands in your console.
 
 Get by type: `curl -XPOST -H 'Content-Type: application/json' -d '{"eventType":"Usual"}' http://localhost:3030/readbytype`
 
-Create: `curl -XPOST -H 'Content-Type: application/json' -d '{"eventType":"Usual","sessionStart":"1476628565","sessionEnd":"1476628965","linkClicked":"https://blog.golang.org/c-go-cgo","timestamp":12039109203,"params":{"C":"c++","D":"D++","R":"R is not a real language"}}' http://localhost:3030/add`
+Create: `curl -XPOST -H 'Content-Type: application/json' -d '{"eventType":"Usual","sessionStart":1476628565,"sessionEnd":1476628965,"linkClicked":"https://blog.golang.org/c-go-cgo","timestamp":12039109203,"params":{"C":"c++","D":"D++","R":"R is not a real language"}}' http://localhost:3030/add`
 
 Read all: `curl -XGET -H 'Content-Type: application/json' http://localhost:3030/read`
 

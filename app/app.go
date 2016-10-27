@@ -41,5 +41,6 @@ func appMiddleware(f func (c *router.MyContext) error) func (c *router.MyContext
 			appError.Message = err.Error()
 >>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 		}
+		c.AppContext.Log.Print(appError.Message)
 	}
 }
