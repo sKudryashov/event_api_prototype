@@ -27,9 +27,15 @@ func NewEventController() *EventController {
 	return &EventController{}
 }
 
+// getRequestBody returns a reference to a byte slice request body
+func getRequestBody(c *router.MyContext) []byte  {
+	data, _ := ioutil.ReadAll(c.Request().Body)
+	return data
+}
+
 // PushData adding data to a storage (whatever it is)
 func (ec *EventController) PushData (c *router.MyContext) error {
-	data, _ := ioutil.ReadAll(c.Request().Body)
+	data := getRequestBody(c)
 	request := model.EventData{}
 	validate := ec.getValidator()
 
@@ -73,7 +79,7 @@ func (ec *EventController) GetData (c *router.MyContext) error {
 
 // GetDataByType Fetching data by event type from storage
 func (ec *EventController) GetDataByType(c *router.MyContext) error {
-	data, _ := ioutil.ReadAll(c.Request().Body)
+	data := getRequestBody(c)
 	request := model.FetchBy{}
 
 	if err := json.Unmarshal(data, &request); err != nil {

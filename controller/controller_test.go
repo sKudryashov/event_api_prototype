@@ -6,7 +6,8 @@ import (
 	"github.com/sKudryashov/go-playground/lars"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"net/http/httptest"
-	"net/http"
+	"fmt"
+	"github.com/karlseguin/gofake"
 )
 
 func TestMain(m *testing.M) {
@@ -16,6 +17,10 @@ func TestMain(m *testing.M) {
 type ApplicationGlobals struct {
 	Storage *model.Storage
 }
+
+type StubReader struct{
+}
+
 
 type Storage struct {}
 
@@ -53,13 +58,12 @@ func initTestModel () *Storage {
 // initContext initializes context mock
 func initContext() *router.MyContext {
 	ctx := lars.New()
-	context := &router.MyContext{
+	return &router.MyContext {
 		Ctx:        lars.NewContext(ctx),
 		AppContext: newGlobals(),
 	}
-
-	return context
 }
+
 // newGlobals initializes globals for our controller
 func newGlobals() *ApplicationGlobals {
 	return &ApplicationGlobals{
@@ -67,18 +71,29 @@ func newGlobals() *ApplicationGlobals {
 	}
 }
 
+// Read is a mock for reader
+func (r *StubReader) Read(p []byte) (n int, err error){
+	fmt.Println("A reader has been called")
+	return 22, nil
+}
+
+/**
+ * ==[ Tests ]==
+ *
+ * go test -v -run=EventController_PushData
+ */
 func TestEventController_PushData(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	fake := gofake.New()
+	fake.Stub("getRequestBody").Returning()
+	reader := new(StubReader)
+	request := httptest.NewRequest("POST", "/add", reader)
+	request.Body
+	recorder.Body
 	ec := new(EventController)
 	context := initContext()
-	//context.Ctx.Request().Body = "something"
 	err := ec.PushData(context)
 	if err != nil {
 		t.Fatal("Push data controller error")
 	}
-}
-
-func getTestServerMock()  {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
-
-	}))
 }

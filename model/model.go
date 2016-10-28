@@ -61,7 +61,6 @@ func (s* Storage) GetAllEvents() (ed *[]EventData, err error) {
 // AddEvent adds an event into the storage
 func (s* Storage) AddEvent (ed *EventData) error {
 	ed.EventId = bson.NewObjectId()
-
 	return s.db.C("events").Insert(ed)
 }
 
