@@ -6,7 +6,6 @@ import (
 	"github.com/sKudryashov/go-playground/lars"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"net/http/httptest"
-	//"net/http"
 	"fmt"
 	"github.com/karlseguin/gofake"
 )

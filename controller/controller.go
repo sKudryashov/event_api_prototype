@@ -18,13 +18,8 @@ type EventController struct {
 }
 // EventError this is the custom error type of event handling
 type EventError struct {
-<<<<<<< HEAD
-	message string
-	err error
-=======
 	Message string
 	Err error
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 }
 
 // NewEventController initialization of the controller
@@ -45,22 +40,14 @@ func (ec *EventController) PushData (c *router.MyContext) error {
 	validate := ec.getValidator()
 
 	if err := json.Unmarshal(data, &request); err != nil {
-<<<<<<< HEAD
-		return errors.Wrap(err, "Unmarshalling error")
-=======
 		return errors.Wrap( err, "Unmarshalling error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	if err := validate.Struct(request); err != nil {
 		return errors.Wrap(err, "Validation error")
 	}
 
-<<<<<<< HEAD
-	if err := c.AppContext.Storage.AddEvent(request); err != nil {
-=======
 	if err := c.AppContext.Storage.AddEvent(&request); err != nil {
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 		return errors.Wrap(err, "Data recording error")
 	}
 
@@ -76,24 +63,14 @@ func (ec *EventController) GetData (c *router.MyContext) error {
 	responseModel, err := c.AppContext.Storage.GetAllEvents()
 
 	if err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Db fetching error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(responseModel)
 
 	if err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Error with unmarshalling: " + err.Error())
-		return err
-=======
 		return errors.Wrap( err, "Unmarshalling error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 	rsp.Write([]byte(dataFoundJson))
 
@@ -106,46 +83,26 @@ func (ec *EventController) GetDataByType(c *router.MyContext) error {
 	request := model.FetchBy{}
 
 	if err := json.Unmarshal(data, &request); err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Error with json unmarshalling: " + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Unmarshalling error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	validate := ec.getValidator()
 
 	if err := validate.Struct(request); err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Error with validation: " + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Validation error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	events, err := c.AppContext.Storage.GetEvents(request.Type)
 
 	if err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Data fetching error:" + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Data fetching error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(events)
 
 	if err != nil {
-<<<<<<< HEAD
-		return err
-		//c.AppContext.Log.Println("Unmarshalling error: " + err.Error())
-=======
 		return errors.Wrap(err, "Unmarshalling error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	rsp.Write([]byte(dataFoundJson))
@@ -160,33 +117,18 @@ func (ec *EventController) GetDataByRange(c *router.MyContext) error {
 
 	start, err = strconv.Atoi(c.Ctx.Param("start"))
 	if err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Wrong URL start parameter: " + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Wrong URL")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	end, err = strconv.Atoi(c.Ctx.Param("end"))
 	if err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Wrong URL end parameter: " + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Wrong URL")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	responseModel, err := c.AppContext.Storage.GetEventsByRange(start, end)
 
 	if err != nil {
-<<<<<<< HEAD
-		//c.AppContext.Log.Println("Error with db fetching: " + err.Error())
-		return err
-=======
 		return errors.Wrap(err, "Storage error")
->>>>>>> 8a2db1083740273a2ca834cba8f4b9f8b1b8acbc
 	}
 
 	rsp := ec.getSuccessWriter(c)

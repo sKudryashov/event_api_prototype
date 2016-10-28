@@ -1,4 +1,6 @@
 # Event api prototype:
+
+<a href="https://codebeat.co/projects/github-com-skudryashov-social_event_api_prototype"><img alt="codebeat badge" src="https://codebeat.co/badges/451abd5d-0ac6-4d56-9dd1-c1a7e966c40e" /></a>
 **Usage example**
 
 There is actually four actions: create, get all, get by event type, get by 
@@ -15,5 +17,3 @@ Read by time range: `curl -XGET -H 'Content-Type: application/json' http://local
 Note that each action dataset has it's own validation rules and some fields are required. If the query didn't pass validation, panic would be triggered. Of course you may change this behaviour easily.
 
 **How to launch it ?**
-
-Probably the simplest way to do it without dancing around mongoDB and glide installation it's just download Docker, get into project root where docker-compose.yml is placed and then type docker-compose up -d. The app will be available on 192.168.99.100:3030
