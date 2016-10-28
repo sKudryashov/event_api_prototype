@@ -1,6 +1,7 @@
 # Event api prototype:
 
 <a href="https://codebeat.co/projects/github-com-skudryashov-social_event_api_prototype"><img alt="codebeat badge" src="https://codebeat.co/badges/451abd5d-0ac6-4d56-9dd1-c1a7e966c40e" /></a>
+
 **Usage example**
 
 There is actually four actions: create, get all, get by event type, get by 
