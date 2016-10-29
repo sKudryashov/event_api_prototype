@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"github.com/sKudryashov/social_event_api_prototype/model"
-	"github.com/sKudryashov/social_event_api_prototype/controller"
 )
 
 func GetRouter() *lars.LARS {
@@ -50,7 +49,7 @@ func newGlobals() *ApplicationGlobals {
 	return &ApplicationGlobals{
 		Log: logger,
 		Storage: model.Init(),
-		Fetcher: controller.NewFetcher(),
+		Fetcher: NewFetcher(),
 	}
 }
 

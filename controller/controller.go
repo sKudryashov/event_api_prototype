@@ -27,7 +27,7 @@ func NewEventController() *EventController {
 
 // PushData adding data to a storage (whatever it is)
 func (ec *EventController) PushData (c *router.MyContext) error {
-	data, _ := c.AppContext.Fetcher.GetRequestBody(c)
+	data, _ := c.AppContext.Fetcher.GetRequestBody(*c)
 	request := model.EventData{}
 	validate := ec.getValidator()
 
@@ -71,7 +71,7 @@ func (ec *EventController) GetData (c *router.MyContext) error {
 
 // GetDataByType Fetching data by event type from storage
 func (ec *EventController) GetDataByType(c *router.MyContext) error {
-	data, _ := c.AppContext.Fetcher.GetRequestBody(c)
+	data, _ := c.AppContext.Fetcher.GetRequestBody(*c)
 	request := model.FetchBy{}
 
 	if err := json.Unmarshal(data, &request); err != nil {
@@ -107,7 +107,7 @@ func (ec *EventController) GetDataByRange(c *router.MyContext) error {
 	var start, end int
 	var err error
 
-	start, end, errorFetch := c.AppContext.Fetcher.GetStartStopRange(ec)
+	start, end, errorFetch := c.AppContext.Fetcher.GetStartStopRange(*c)
 	if errorFetch != nil {
 		return errors.Wrap(errorFetch, "Wrong URL")
 	}

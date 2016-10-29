@@ -2,15 +2,14 @@ package controller
 
 import (
 	"testing"
-	//"github.com/sKudryashov/social_event_api_prototype/router"
+	"github.com/sKudryashov/social_event_api_prototype/router"
 	"fmt"
-	"net/http/httptest"
 	"github.com/stretchr/testify/assert"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 )
 
 var (
-	context *httptest.Server
+	context *router.MyContext
 	controller *EventController
 )
 
@@ -22,7 +21,7 @@ func init()  {
 // ApplicationGlobals fake type
 type ApplicationGlobals struct {
 	Storage model.EventStorage
-	Fetcher RequestFetcher
+	Fetcher router.RequestFetcher
 }
 
 type StubReader struct {}
@@ -30,7 +29,7 @@ type Storage struct {}
 type FetcherTest struct {}
 
 // initTestFetcher initializes a test fetcher
-func newTestFetcher() *Fetcher {
+func newTestFetcher() *FetcherTest {
 	return &FetcherTest{}
 }
 
@@ -42,21 +41,23 @@ func initContext() *router.MyContext {
 }
 
 // newGlobals initializes globals for our controller
-func newGlobals() *ApplicationGlobals {
-	return &ApplicationGlobals{
+func newGlobals() *router.ApplicationGlobals {
+	return &router.ApplicationGlobals{
 		Storage: newTestModel(),
 		Fetcher: newTestFetcher(),
 	}
 }
 
 // GetRequestBody fetcher stub
-func (f FetcherTest) GetRequestBody(c *router.MyContext) ([]byte, error) {
-	return []byte("some string"), error("some")
+func (f FetcherTest) GetRequestBody(c router.MyContext) ([]byte, error) {
+	var err error
+	return []byte("some string"), err
 }
 
 // GetStartStopRange fetcher stub
-func (f FetcherTest) GetStartStopRange (c *router.MyContext) (string, string, error) {
-	return "tik", "tok", error("some")
+func (f FetcherTest) GetStartStopRange (c router.MyContext) (int, int, error) {
+	var err error
+	return 12, 123, err
 }
 
 // GetAllEvents storage stub
@@ -103,19 +104,6 @@ func TestEventController_PushData(t *testing.T) {
 	fmt.Println("Test is run")
 	err := controller.PushData(context)
 	if err != nil {
-		t.Fatalf("TestEventController_PushData failed %s", err.Error())
+		t.Error("TestEventController_PushData failed", err.Error())
 	}
-	//recorder := httptest.NewRecorder()
-	//fake := gofake.New()
-	//fake.Stub("getRequestBody").Returning()
-	//reader := new(StubReader)
-	//request := httptest.NewRequest("POST", "/add", reader)
-	//request.Body
-	//recorder.Body
-	//ec := new(EventController)
-	//context := initContext()
-	//err := ec.PushData(context)
-	//if err != nil {
-	//	t.Fatal("Push data controller error")
-	//}
 }
