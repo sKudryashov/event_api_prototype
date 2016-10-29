@@ -2,71 +2,36 @@ package controller
 
 import (
 	"testing"
-	"github.com/sKudryashov/social_event_api_prototype/router"
-	//"github.com/sKudryashov/go-playground/lars"
+	//"github.com/sKudryashov/social_event_api_prototype/router"
 	"fmt"
-	//"github.com/karlseguin/gofake"
-	"net/http"
 	"net/http/httptest"
-	"io"
 	"github.com/stretchr/testify/assert"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 )
 
 var (
-	server *httptest.Server
-	reader io.Reader //Ignore this for now
-	url    string
+	context *httptest.Server
+	controller *EventController
 )
 
 func init()  {
-	ec := new(EventController)
-	fmt.Println("Test initializer!")
-	http.HandleFunc("/add", ec.PushData)
-	server = httptest.NewServer(http.DefaultServeMux)
-	url = fmt.Sprintf("%s/filter", server.URL)
+	controller = new(EventController)
+	context = initContext()
 }
 
-func TestMain(m *testing.M) {
-	m.Run()
-}
-
+// ApplicationGlobals fake type
 type ApplicationGlobals struct {
-	Storage *model.Storage
+	Storage model.EventStorage
+	Fetcher RequestFetcher
 }
 
 type StubReader struct {}
 type Storage struct {}
+type FetcherTest struct {}
 
-// GetAllEvents mock
-func (s* Storage) GetAllEvents() (ed *[]model.EventData, err error) {
-	responseModel := []model.EventData{
-	}
-	return &responseModel, nil
-}
-
-// AddEvent mock
-func (s* Storage) AddEvent (ed *model.EventData) error {
-	return nil
-}
-
-// GetEvents mock
-func (s* Storage) GetEvents(eventType string)  (rm *[]model.EventData, err error) {
-	responseModel := []model.EventData{
-	}
-	return &responseModel, nil
-}
-
-// GetEventsByRange mock
-func (s* Storage) GetEventsByRange (start, end int) (ed *[]model.EventData, err error) {
-	responseModel := []model.EventData{
-	}
-	return &responseModel, nil
-}
-
-// initTestModel initializes a fake model
-func initTestModel () *Storage {
-	return &Storage{}
+// initTestFetcher initializes a test fetcher
+func newTestFetcher() *Fetcher {
+	return &FetcherTest{}
 }
 
 // initContext initializes context mock
@@ -79,12 +44,51 @@ func initContext() *router.MyContext {
 // newGlobals initializes globals for our controller
 func newGlobals() *ApplicationGlobals {
 	return &ApplicationGlobals{
-		Storage: initTestModel(),
+		Storage: newTestModel(),
+		Fetcher: newTestFetcher(),
 	}
 }
 
+// GetRequestBody fetcher stub
+func (f FetcherTest) GetRequestBody(c *router.MyContext) ([]byte, error) {
+	return []byte("some string"), error("some")
+}
+
+// GetStartStopRange fetcher stub
+func (f FetcherTest) GetStartStopRange (c *router.MyContext) (string, string, error) {
+	return "tik", "tok", error("some")
+}
+
+// GetAllEvents storage stub
+func (s* Storage) GetAllEvents() (ed *[]model.EventData, err error) {
+	responseModel := []model.EventData{}
+	return &responseModel, nil
+}
+
+// AddEvent storage stub
+func (s* Storage) AddEvent (ed *model.EventData) error {
+	return nil
+}
+
+// GetEvents storage stub
+func (s* Storage) GetEvents(eventType string)  (rm *[]model.EventData, err error) {
+	responseModel := []model.EventData{}
+	return &responseModel, nil
+}
+
+// GetEventsByRange storage stub
+func (s* Storage) GetEventsByRange (start, end int) (ed *[]model.EventData, err error) {
+	responseModel := []model.EventData{}
+	return &responseModel, nil
+}
+
+// initTestModel initializes a fake storage
+func newTestModel() *Storage {
+	return &Storage{}
+}
+
 // Read is a mock for reader
-func (r *StubReader) Read(p []byte) (n int, err error){
+func (r *StubReader) Read(p []byte) (n int, err error) {
 	fmt.Println("A reader has been called")
 	return 22, nil
 }
@@ -97,6 +101,10 @@ func (r *StubReader) Read(p []byte) (n int, err error){
 func TestEventController_PushData(t *testing.T) {
 	assert.New(t)
 	fmt.Println("Test is run")
+	err := controller.PushData(context)
+	if err != nil {
+		t.Fatalf("TestEventController_PushData failed %s", err.Error())
+	}
 	//recorder := httptest.NewRecorder()
 	//fake := gofake.New()
 	//fake.Stub("getRequestBody").Returning()

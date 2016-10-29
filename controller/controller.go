@@ -1,13 +1,11 @@
 package controller
 
 import (
-	"io/ioutil"
 	"gopkg.in/go-playground/validator.v8"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"github.com/sKudryashov/social_event_api_prototype/router"
 	"encoding/json"
 	"github.com/go-playground/lars"
-	"strconv"
 	"net/http"
 	"github.com/pkg/errors"
 )
@@ -27,15 +25,9 @@ func NewEventController() *EventController {
 	return &EventController{}
 }
 
-// getRequestBody returns a reference to a byte slice request body
-func getRequestBody(c *router.MyContext) []byte  {
-	data, _ := ioutil.ReadAll(c.Request().Body)
-	return data
-}
-
 // PushData adding data to a storage (whatever it is)
 func (ec *EventController) PushData (c *router.MyContext) error {
-	data := getRequestBody(c)
+	data, _ := c.AppContext.Fetcher.GetRequestBody(c)
 	request := model.EventData{}
 	validate := ec.getValidator()
 
@@ -79,7 +71,7 @@ func (ec *EventController) GetData (c *router.MyContext) error {
 
 // GetDataByType Fetching data by event type from storage
 func (ec *EventController) GetDataByType(c *router.MyContext) error {
-	data := getRequestBody(c)
+	data, _ := c.AppContext.Fetcher.GetRequestBody(c)
 	request := model.FetchBy{}
 
 	if err := json.Unmarshal(data, &request); err != nil {
@@ -115,18 +107,12 @@ func (ec *EventController) GetDataByRange(c *router.MyContext) error {
 	var start, end int
 	var err error
 
-	start, err = strconv.Atoi(c.Ctx.Param("start"))
-	if err != nil {
-		return errors.Wrap(err, "Wrong URL")
-	}
-
-	end, err = strconv.Atoi(c.Ctx.Param("end"))
-	if err != nil {
-		return errors.Wrap(err, "Wrong URL")
+	start, end, errorFetch := c.AppContext.Fetcher.GetStartStopRange(ec)
+	if errorFetch != nil {
+		return errors.Wrap(errorFetch, "Wrong URL")
 	}
 
 	responseModel, err := c.AppContext.Storage.GetEventsByRange(start, end)
-
 	if err != nil {
 		return errors.Wrap(err, "Storage error")
 	}

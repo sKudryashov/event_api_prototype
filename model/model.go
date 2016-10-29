@@ -26,6 +26,13 @@ type Storage struct {
 	db *mongo.Database
 }
 
+type EventStorage interface {
+	GetAllEvents() (ed *[]EventData, err error)
+	AddEvent (ed *EventData) error
+	GetEvents (eventType string) (rm *[]EventData, err error)
+	GetEventsByRange (start, end int) (ed *[]EventData, err error)
+}
+
 // Init initializes application storage
 func Init() *Storage {
 	storage := new(Storage)
@@ -65,7 +72,7 @@ func (s* Storage) AddEvent (ed *EventData) error {
 }
 
 // GetEvents returns an events slice by event type
-func (s* Storage) GetEvents(eventType string)  (rm *[]EventData, err error) {
+func (s* Storage) GetEvents(eventType string) (rm *[]EventData, err error) {
 	var responseModel []EventData
 
 	findBy := bson.M{"eventType": eventType}

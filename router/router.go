@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"github.com/sKudryashov/social_event_api_prototype/model"
+	"github.com/sKudryashov/social_event_api_prototype/controller"
 )
 
 func GetRouter() *lars.LARS {
@@ -35,9 +36,12 @@ func castCustomContext(c lars.Context, handler lars.Handler) {
 	h(ctx)
 }
 
+// ApplicationGlobals contains logger and storage which are used
+// overall application
 type ApplicationGlobals struct {
 	Log *log.Logger
-	Storage *model.Storage
+	Storage model.EventStorage
+	Fetcher RequestFetcher
 }
 
 func newGlobals() *ApplicationGlobals {
@@ -46,6 +50,7 @@ func newGlobals() *ApplicationGlobals {
 	return &ApplicationGlobals{
 		Log: logger,
 		Storage: model.Init(),
+		Fetcher: controller.NewFetcher(),
 	}
 }
 
