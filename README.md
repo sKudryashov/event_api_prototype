@@ -18,3 +18,14 @@ Read by time range: `curl -XGET -H 'Content-Type: application/json' http://local
 Note that each action dataset has it's own validation rules and some fields are required. If the query didn't pass validation, panic would be triggered. Of course you may change this behaviour easily.
 
 **How to launch it ?**
+
+Since Docker is not configured yet, you should set up mongo DB and then create collection with name "events".
+
+After that dependencies via go get. Then type go install to build and install the app. 
+
+Then you just can type commands above. 
+
+Docker build will be ready soon, stay tuned!
+
+To launch tests you should type go test -v github.com/sKudryashov/social_event_api_prototype/controller -run "^TestEventController_PushData|TestEventController_GetData|TestEventController_GetDataByType|TestEventController_GetDataByRange$"
+while travis and coveralls build isn't ready yet.  
