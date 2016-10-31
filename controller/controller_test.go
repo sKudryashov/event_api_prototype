@@ -3,78 +3,117 @@ package controller
 import (
 	"testing"
 	"github.com/sKudryashov/social_event_api_prototype/router"
-	"github.com/sKudryashov/go-playground/lars"
+	"github.com/stretchr/testify/assert"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"net/http/httptest"
 	"fmt"
-	"github.com/karlseguin/gofake"
+	"strings"
+	"strconv"
 )
 
-func TestMain(m *testing.M) {
-	m.Run()
+var (
+	controller *EventController
+	request []byte
+	start int
+	stop int
+)
+
+func init() {
+	controller = new(EventController)
 }
 
-type ApplicationGlobals struct {
-	Storage *model.Storage
+type Storage struct {
+}
+type TestResponseWriter struct {
 }
 
-type StubReader struct{
+func (tw TestResponseWriter) WriteSuccess(c *router.MyContext, response []byte) (int, error) {
+	var err error
+	fmt.Println("Write success method has been called", str.Aresponse)
+	return 23, err
 }
 
-
-type Storage struct {}
-
-// GetAllEvents mock
-func (s* Storage) GetAllEvents() (ed *[]model.EventData, err error) {
-	responseModel := []model.EventData{
-	}
-	return &responseModel, nil
+func (tw TestResponseWriter) WriteNotFound(c *router.MyContext, response string) (int, error) {
+	var err error
+	fmt.Println(response)
+	return 23, err
 }
 
-// AddEvent mock
-func (s* Storage) AddEvent (ed *model.EventData) error {
-	return nil
+func (tw TestResponseWriter) WriteForbidden(c *router.MyContext, response string) (int, error) {
+	var err error
+	fmt.Println(response)
+	return 23, err
 }
 
-// GetEvents mock
-func (s* Storage) GetEvents(eventType string)  (rm *[]model.EventData, err error) {
-	responseModel := []model.EventData{
-	}
-	return &responseModel, nil
-}
-
-// GetEventsByRange mock
-func (s* Storage) GetEventsByRange (start, end int) (ed *[]model.EventData, err error) {
-	responseModel := []model.EventData{
-	}
-	return &responseModel, nil
-}
-
-// initTestModel initializes a fake model
-func initTestModel () *Storage {
-	return &Storage{}
+type TestContext interface {
+	Response() *httptest.ResponseRecorder
 }
 
 // initContext initializes context mock
 func initContext() *router.MyContext {
-	ctx := lars.New()
-	return &router.MyContext {
-		Ctx:        lars.NewContext(ctx),
-		AppContext: newGlobals(),
+	return &router.MyContext{
+		AppContext: newTestGlobals(),
 	}
+}
+
+func newResponseWriter() *TestResponseWriter {
+	return new(TestResponseWriter)
 }
 
 // newGlobals initializes globals for our controller
-func newGlobals() *ApplicationGlobals {
-	return &ApplicationGlobals{
-		Storage: initTestModel(),
+func newTestGlobals() *router.ApplicationGlobals {
+	return &router.ApplicationGlobals{
+		Storage: newTestModel(),
+		Fetcher: newTestFetcher(),
+		Writer: newResponseWriter(),
 	}
 }
 
-// Read is a mock for reader
-func (r *StubReader) Read(p []byte) (n int, err error){
-	fmt.Println("A reader has been called")
-	return 22, nil
+type FetcherTest struct{}
+
+// initTestFetcher initializes a test fetcher
+func newTestFetcher() *FetcherTest {
+	return &FetcherTest{}
+}
+
+// GetRequestBody fetcher stub
+func (f FetcherTest) GetRequestBody(c router.MyContext) ([]byte, error) {
+	var err error
+	return request, err
+}
+
+// GetStartStopRange fetcher stub
+func (f FetcherTest) GetStartStopRange(c router.MyContext) (int, int, error) {
+	var err error
+	return start, stop, err
+}
+
+// GetAllEvents storage stub
+func (s*Storage) GetAllEvents() (ed *[]model.EventData, err error) {
+	responseModel := []model.EventData{}
+	return &responseModel, nil
+}
+
+// AddEvent storage stub
+func (s*Storage) AddEvent(ed *model.EventData) error {
+	return nil
+}
+
+// GetEvents storage stub
+func (s*Storage) GetEvents(eventType string) (rm *[]model.EventData, err error) {
+	responseModel := []model.EventData{}
+	return &responseModel, nil
+}
+
+// GetEventsByRange storage stub
+func (s*Storage) GetEventsByRange(start, end int) (ed *[]model.EventData, err error) {
+	responseModel := []model.EventData{}
+	return &responseModel, nil
+}
+
+// initTestModel initializes a fake storage
+func newTestModel() *Storage {
+	return &Storage{}
 }
 
 /**
@@ -83,17 +122,35 @@ func (r *StubReader) Read(p []byte) (n int, err error){
  * go test -v -run=EventController_PushData
  */
 func TestEventController_PushData(t *testing.T) {
-	recorder := httptest.NewRecorder()
-	fake := gofake.New()
-	fake.Stub("getRequestBody").Returning()
-	reader := new(StubReader)
-	request := httptest.NewRequest("POST", "/add", reader)
-	request.Body
-	recorder.Body
-	ec := new(EventController)
-	context := initContext()
-	err := ec.PushData(context)
+	assert.New(t)
+	request = []byte(`{"eventType":"Usual","sessionStart":1476628565,"sessionEnd":1476628965,"linkClicked":"https://blog.golang.org/c-go-cgo","timestamp":12039109203,"params":{"C":"c++","D":"D++","R":"R is not a real language"}}`)
+	err := controller.PushData(initContext())
 	if err != nil {
-		t.Fatal("Push data controller error")
+		t.Error("TestEventController_PushData failed -> ", err.Error())
+	}
+}
+
+func TestEventController_GetData(t *testing.T) {
+	assert.New(t)
+	err := controller.GetData(initContext())
+	if err != nil {
+		t.Error("TestEventController_GetData failed -> ", err.Error())
+	}
+}
+
+func TestEventController_GetDataByType(t *testing.T) {
+	assert.New(t)
+	request = []byte(`{"eventType":"Usual"}`)
+	err := controller.GetDataByType(initContext())
+	if err != nil {
+		t.Error("TestEventController_GetDataByType failed -> ", err.Error())
+	}
+}
+
+func TestEventController_GetDataByRange(t *testing.T) {
+	assert.New(t)
+	err := controller.GetDataByRange(initContext())
+	if err != nil {
+		t.Error("TestEventController_GetDataByRange failed -> ", err.Error())
 	}
 }

@@ -35,9 +35,13 @@ func castCustomContext(c lars.Context, handler lars.Handler) {
 	h(ctx)
 }
 
+// ApplicationGlobals contains logger and storage which are used
+// overall application
 type ApplicationGlobals struct {
 	Log *log.Logger
-	Storage *model.Storage
+	Storage model.EventStorage
+	Fetcher RequestFetcher
+	Writer ResponseWriter
 }
 
 func newGlobals() *ApplicationGlobals {
@@ -46,6 +50,8 @@ func newGlobals() *ApplicationGlobals {
 	return &ApplicationGlobals{
 		Log: logger,
 		Storage: model.Init(),
+		Fetcher: NewFetcher(),
+		Writer: NewAppResponseWriter(),
 	}
 }
 
