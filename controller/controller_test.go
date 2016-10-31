@@ -6,9 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"net/http/httptest"
-	"fmt"
-	"strings"
-	"strconv"
 )
 
 var (
@@ -27,21 +24,18 @@ type Storage struct {
 type TestResponseWriter struct {
 }
 
-func (tw TestResponseWriter) WriteSuccess(c *router.MyContext, response []byte) (int, error) {
+func (tw TestResponseWriter) WriteSuccess(_ *router.MyContext, _[]byte) (int, error) {
 	var err error
-	fmt.Println("Write success method has been called", str.Aresponse)
 	return 23, err
 }
 
-func (tw TestResponseWriter) WriteNotFound(c *router.MyContext, response string) (int, error) {
+func (tw TestResponseWriter) WriteNotFound(_ *router.MyContext, _ string) (int, error) {
 	var err error
-	fmt.Println(response)
 	return 23, err
 }
 
-func (tw TestResponseWriter) WriteForbidden(c *router.MyContext, response string) (int, error) {
+func (tw TestResponseWriter) WriteForbidden(_ *router.MyContext, _ string) (int, error) {
 	var err error
-	fmt.Println(response)
 	return 23, err
 }
 
