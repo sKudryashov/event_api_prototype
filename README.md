@@ -28,4 +28,4 @@ Then you just can type commands above.
 Docker build will be ready soon, stay tuned!
 
 To launch tests you should type go test -v github.com/sKudryashov/social_event_api_prototype/controller -run "^TestEventController_PushData|TestEventController_GetData|TestEventController_GetDataByType|TestEventController_GetDataByRange$"
-while travis and coveralls build isn't ready yet.  
+while travis and coveralls builds ain't ready yet.  
