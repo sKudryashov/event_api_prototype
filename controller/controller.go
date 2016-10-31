@@ -1,14 +1,10 @@
 package controller
 
 import (
-	"io/ioutil"
 	"gopkg.in/go-playground/validator.v8"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"github.com/sKudryashov/social_event_api_prototype/router"
 	"encoding/json"
-	"github.com/go-playground/lars"
-	"strconv"
-	"net/http"
 	"github.com/pkg/errors"
 )
 
@@ -27,15 +23,9 @@ func NewEventController() *EventController {
 	return &EventController{}
 }
 
-// getRequestBody returns a reference to a byte slice request body
-func getRequestBody(c *router.MyContext) []byte  {
-	data, _ := ioutil.ReadAll(c.Request().Body)
-	return data
-}
-
 // PushData adding data to a storage (whatever it is)
 func (ec *EventController) PushData (c *router.MyContext) error {
-	data := getRequestBody(c)
+	data, _ := c.AppContext.Fetcher.GetRequestBody(*c)
 	request := model.EventData{}
 	validate := ec.getValidator()
 
@@ -51,9 +41,11 @@ func (ec *EventController) PushData (c *router.MyContext) error {
 		return errors.Wrap(err, "Data recording error")
 	}
 
-	rsp := ec.getSuccessWriter(c)
-	rsp.Write([]byte("Data has been written successfully"))
-	c.AppContext.Log.Println("Data has been written successfully")
+	_, err := c.AppContext.Writer.WriteSuccess(c, []byte("Data has been written successfully"))
+
+	if err != nil {
+		return errors.Wrap(err, "Data writer error")
+	}
 
 	return nil
 }
@@ -66,20 +58,25 @@ func (ec *EventController) GetData (c *router.MyContext) error {
 		return errors.Wrap(err, "Db fetching error")
 	}
 
-	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(responseModel)
 
 	if err != nil {
 		return errors.Wrap( err, "Unmarshalling error")
 	}
-	rsp.Write([]byte(dataFoundJson))
+
+	_, err = c.AppContext.Writer.WriteSuccess(c, dataFoundJson)
+
+	if err != nil {
+		//todo: move this out to constants
+		return errors.Wrap(err, "Response error")
+	}
 
 	return nil
 }
 
 // GetDataByType Fetching data by event type from storage
 func (ec *EventController) GetDataByType(c *router.MyContext) error {
-	data := getRequestBody(c)
+	data, _ := c.AppContext.Fetcher.GetRequestBody(*c)
 	request := model.FetchBy{}
 
 	if err := json.Unmarshal(data, &request); err != nil {
@@ -98,14 +95,18 @@ func (ec *EventController) GetDataByType(c *router.MyContext) error {
 		return errors.Wrap(err, "Data fetching error")
 	}
 
-	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(events)
 
 	if err != nil {
 		return errors.Wrap(err, "Unmarshalling error")
 	}
 
-	rsp.Write([]byte(dataFoundJson))
+	_, err = c.AppContext.Writer.WriteSuccess(c, dataFoundJson)
+
+	if err != nil {
+		//todo: move this out to constants
+		return errors.Wrap(err, "Response error")
+	}
 
 	return nil
 }
@@ -115,25 +116,23 @@ func (ec *EventController) GetDataByRange(c *router.MyContext) error {
 	var start, end int
 	var err error
 
-	start, err = strconv.Atoi(c.Ctx.Param("start"))
-	if err != nil {
-		return errors.Wrap(err, "Wrong URL")
-	}
-
-	end, err = strconv.Atoi(c.Ctx.Param("end"))
-	if err != nil {
-		return errors.Wrap(err, "Wrong URL")
+	start, end, errorFetch := c.AppContext.Fetcher.GetStartStopRange(*c)
+	if errorFetch != nil {
+		return errors.Wrap(errorFetch, "Wrong URL")
 	}
 
 	responseModel, err := c.AppContext.Storage.GetEventsByRange(start, end)
-
 	if err != nil {
 		return errors.Wrap(err, "Storage error")
 	}
 
-	rsp := ec.getSuccessWriter(c)
 	dataFoundJson, err := json.Marshal(responseModel)
-	rsp.Write([]byte(dataFoundJson))
+	_, err = c.AppContext.Writer.WriteSuccess(c, dataFoundJson)
+
+	if err != nil {
+		//todo: move this out to constants
+		return errors.Wrap(err, "Response error")
+	}
 
 	return nil
 }
@@ -143,29 +142,4 @@ func (ec *EventController) getValidator() *validator.Validate {
 	validate.SetTagName("validate")
 
 	return validate
-}
-
-func (ec *EventController) getSuccessWriter(c *router.MyContext) *lars.Response {
-	rsp := c.Ctx.Response()
-	rsp.WriteHeader(http.StatusOK)
-	rsp.Header().Set("Content-Type", "application/json")
-
-	return rsp
-}
-
-func (ec *EventController) getErrorNotFoundWriter(c *router.MyContext) *lars.Response {
-	rsp := c.Ctx.Response()
-	rsp.WriteHeader(http.StatusNotFound)
-	rsp.Header().Set("Content-Type", "application/json")
-
-	return rsp
-}
-
-// Returns writer for HTTP forbidden
-func (ec *EventController) getErrorForbiddenWriter(c *router.MyContext) *lars.Response {
-	rsp := c.Ctx.Response()
-	rsp.WriteHeader(http.StatusForbidden)
-	rsp.Header().Set("Content-Type", "application/json")
-
-	return rsp
 }
