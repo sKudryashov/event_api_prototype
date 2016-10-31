@@ -41,6 +41,7 @@ type ApplicationGlobals struct {
 	Log *log.Logger
 	Storage model.EventStorage
 	Fetcher RequestFetcher
+	Writer ResponseWriter
 }
 
 func newGlobals() *ApplicationGlobals {
@@ -50,6 +51,7 @@ func newGlobals() *ApplicationGlobals {
 		Log: logger,
 		Storage: model.Init(),
 		Fetcher: NewFetcher(),
+		Writer: NewAppResponseWriter(),
 	}
 }
 

@@ -7,7 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"net/http/httptest"
-	"github.com/sKudryashov/go-playground/lars"
+	//"github.com/sKudryashov/go-playground/lars"
+	"fmt"
 )
 
 var (
@@ -22,6 +23,19 @@ func init()  {
 }
 
 type Storage struct {}
+type TestResponseWriter struct{}
+
+func (tw TestResponseWriter) WriteSuccess(c *router.MyContext, response string) (int, error)  {
+	var err error
+	fmt.Println(response)
+	return 23, err
+}
+
+func (tw TestResponseWriter) WriteNotFound(c *router.MyContext, response string) (int, error) {
+	var err error
+	fmt.Println(response)
+	return 23, err
+}
 
 type TestContext interface {
 	Response() *httptest.ResponseRecorder
@@ -29,11 +43,13 @@ type TestContext interface {
 
 // initContext initializes context mock
 func initContext() *router.MyContext {
-	new(TestContext)
 	return &router.MyContext {
-		Ctx: lars.NewContext(l),
 		AppContext: newTestGlobals(),
 	}
+}
+
+func newResponseWriter() *TestResponseWriter {
+	return new(TestResponseWriter)
 }
 
 // newGlobals initializes globals for our controller
@@ -41,6 +57,7 @@ func newTestGlobals() *router.ApplicationGlobals {
 	return &router.ApplicationGlobals{
 		Storage: newTestModel(),
 		Fetcher: newTestFetcher(),
+		Writer: newResponseWriter(),
 	}
 }
 
