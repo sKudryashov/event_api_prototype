@@ -41,12 +41,11 @@ func (ec *EventController) PushData (c *router.MyContext) error {
 		return errors.Wrap(err, "Data recording error")
 	}
 
-	_, err := c.AppContext.Writer.WriteSuccess(c, "Data has been written successfully")
+	_, err := c.AppContext.Writer.WriteSuccess(c, []byte("Data has been written successfully"))
 
 	if err != nil {
-		return errors.Wrap(err, c)
+		return errors.Wrap(err, "Data writer error")
 	}
-	c.AppContext.Log.Println("Data has been written successfully")
 
 	return nil
 }

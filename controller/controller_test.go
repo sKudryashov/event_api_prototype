@@ -3,12 +3,12 @@ package controller
 import (
 	"testing"
 	"github.com/sKudryashov/social_event_api_prototype/router"
-	//"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/sKudryashov/social_event_api_prototype/model"
 	"net/http/httptest"
-	//"github.com/sKudryashov/go-playground/lars"
 	"fmt"
+	"strings"
+	"strconv"
 )
 
 var (
@@ -18,20 +18,28 @@ var (
 	stop int
 )
 
-func init()  {
+func init() {
 	controller = new(EventController)
 }
 
-type Storage struct {}
-type TestResponseWriter struct{}
+type Storage struct {
+}
+type TestResponseWriter struct {
+}
 
-func (tw TestResponseWriter) WriteSuccess(c *router.MyContext, response string) (int, error)  {
+func (tw TestResponseWriter) WriteSuccess(c *router.MyContext, response []byte) (int, error) {
+	var err error
+	fmt.Println("Write success method has been called", str.Aresponse)
+	return 23, err
+}
+
+func (tw TestResponseWriter) WriteNotFound(c *router.MyContext, response string) (int, error) {
 	var err error
 	fmt.Println(response)
 	return 23, err
 }
 
-func (tw TestResponseWriter) WriteNotFound(c *router.MyContext, response string) (int, error) {
+func (tw TestResponseWriter) WriteForbidden(c *router.MyContext, response string) (int, error) {
 	var err error
 	fmt.Println(response)
 	return 23, err
@@ -43,7 +51,7 @@ type TestContext interface {
 
 // initContext initializes context mock
 func initContext() *router.MyContext {
-	return &router.MyContext {
+	return &router.MyContext{
 		AppContext: newTestGlobals(),
 	}
 }
@@ -61,7 +69,7 @@ func newTestGlobals() *router.ApplicationGlobals {
 	}
 }
 
-type FetcherTest struct {}
+type FetcherTest struct{}
 
 // initTestFetcher initializes a test fetcher
 func newTestFetcher() *FetcherTest {
@@ -75,30 +83,30 @@ func (f FetcherTest) GetRequestBody(c router.MyContext) ([]byte, error) {
 }
 
 // GetStartStopRange fetcher stub
-func (f FetcherTest) GetStartStopRange (c router.MyContext) (int, int, error) {
+func (f FetcherTest) GetStartStopRange(c router.MyContext) (int, int, error) {
 	var err error
 	return start, stop, err
 }
 
 // GetAllEvents storage stub
-func (s* Storage) GetAllEvents() (ed *[]model.EventData, err error) {
+func (s*Storage) GetAllEvents() (ed *[]model.EventData, err error) {
 	responseModel := []model.EventData{}
 	return &responseModel, nil
 }
 
 // AddEvent storage stub
-func (s* Storage) AddEvent (ed *model.EventData) error {
+func (s*Storage) AddEvent(ed *model.EventData) error {
 	return nil
 }
 
 // GetEvents storage stub
-func (s* Storage) GetEvents(eventType string)  (rm *[]model.EventData, err error) {
+func (s*Storage) GetEvents(eventType string) (rm *[]model.EventData, err error) {
 	responseModel := []model.EventData{}
 	return &responseModel, nil
 }
 
 // GetEventsByRange storage stub
-func (s* Storage) GetEventsByRange (start, end int) (ed *[]model.EventData, err error) {
+func (s*Storage) GetEventsByRange(start, end int) (ed *[]model.EventData, err error) {
 	responseModel := []model.EventData{}
 	return &responseModel, nil
 }
@@ -115,11 +123,34 @@ func newTestModel() *Storage {
  */
 func TestEventController_PushData(t *testing.T) {
 	assert.New(t)
-	context := initContext()
 	request = []byte(`{"eventType":"Usual","sessionStart":1476628565,"sessionEnd":1476628965,"linkClicked":"https://blog.golang.org/c-go-cgo","timestamp":12039109203,"params":{"C":"c++","D":"D++","R":"R is not a real language"}}`)
-	//httptest.NewRecorder()
-	err := controller.PushData(context)
+	err := controller.PushData(initContext())
 	if err != nil {
 		t.Error("TestEventController_PushData failed -> ", err.Error())
+	}
+}
+
+func TestEventController_GetData(t *testing.T) {
+	assert.New(t)
+	err := controller.GetData(initContext())
+	if err != nil {
+		t.Error("TestEventController_GetData failed -> ", err.Error())
+	}
+}
+
+func TestEventController_GetDataByType(t *testing.T) {
+	assert.New(t)
+	request = []byte(`{"eventType":"Usual"}`)
+	err := controller.GetDataByType(initContext())
+	if err != nil {
+		t.Error("TestEventController_GetDataByType failed -> ", err.Error())
+	}
+}
+
+func TestEventController_GetDataByRange(t *testing.T) {
+	assert.New(t)
+	err := controller.GetDataByRange(initContext())
+	if err != nil {
+		t.Error("TestEventController_GetDataByRange failed -> ", err.Error())
 	}
 }
