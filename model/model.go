@@ -79,7 +79,7 @@ func (s* Storage) GetEvents(eventType string) (rm *[]EventData, err error) {
 	query := s.db.C("events").Find(findBy);
 	count, err := query.Count()
 
-	if err != nil {
+	if err == nil {
 		responseModel = make([]EventData, 0, count)
 		err = query.All(&responseModel)
 	}

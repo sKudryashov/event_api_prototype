@@ -5,11 +5,10 @@ env:
 
 install:
     - export GOPATH=$(pwd)
-    - cd src/social_event_api_prototype
-    - go get -t -d -v ./...
+    - cd $GOPATH
 
 script:
-   - go test -v -cover ./...
+   - go test -v ./...
    - go get golang.org/x/tools/cmd/cover
    - go get github.com/mattn/goveralls
    - go get github.com/kisielk/errcheck

@@ -100,14 +100,11 @@ func (ec *EventController) GetDataByType(c *router.MyContext) error {
 	if err != nil {
 		return errors.Wrap(err, "Unmarshalling error")
 	}
-
 	_, err = c.AppContext.Writer.WriteSuccess(c, dataFoundJson)
-
 	if err != nil {
 		//todo: move this out to constants
 		return errors.Wrap(err, "Response error")
 	}
-
 	return nil
 }
 
