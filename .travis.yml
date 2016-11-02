@@ -4,8 +4,8 @@ env:
     - GIMME_OS=linux GIMME_ARCH=amd64
 
 install:
-    - export GOPATH=$(pwd)
-    - cd src/social_event_api_prototype
+#    - export GOPATH=$(pwd)
+    - cd social_event_api_prototype
     - go get -t -d -v ./...
 
 script:
