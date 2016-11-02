@@ -1,0 +1,22 @@
+language: go
+
+env:
+    - GIMME_OS=linux GIMME_ARCH=amd64
+
+install:
+    - export GOPATH=$(pwd)
+    - cd src/social_event_api_prototype
+    - go get -t -d -v ./...
+
+script:
+   - go test -v -cover ./...
+   - go get golang.org/x/tools/cmd/cover
+   - go get github.com/mattn/goveralls
+   - go get github.com/kisielk/errcheck
+   - go get -u github.com/FiloSottile/gvt
+   - gvt restore
+   - go test -v $(go list ./... | grep -v vendor/)
+   - go vet $(go list ./... | grep -v vendor/)
+   - errcheck $(go list ./... | grep -v vendor/)
+   - docs/project-code-coverage.sh
+   - docs/build_children.sh
