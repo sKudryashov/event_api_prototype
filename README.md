@@ -4,7 +4,7 @@
 
 **Usage example**
 
-There is actually four actions: create, get all, get by event type, get by 
+There are four actions: create, get all, get by event type, get by
 time range. Just type appropriate commands in your console.
 
 Get by type: `curl -XPOST -H 'Content-Type: application/json' -d '{"eventType":"Usual"}' http://localhost:3030/readbytype`
